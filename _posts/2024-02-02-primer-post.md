@@ -1,14 +1,19 @@
 ---
 title: "Primer Posteo"
 layout: single
+
 excerpt: "Esta es la descripcion de la maquina"
 show_date: true
 classes: wide
 
 toc: true
-toc_label: "Content"
-toc_icon: "fire"
+toc_label: "Contenido"
+toc_icon: "cube"
 toc_sticky: false
+
+header:
+  teaser:  
+  teaser_home_page: true
 
 categories:
   - Hack The Box
@@ -17,6 +22,7 @@ tags:
   - Hacking
   - Python
 ---
+
 # Fase 1
 Aqui veremos como se inica todo este proceso
 ## Empezando el escaneo
