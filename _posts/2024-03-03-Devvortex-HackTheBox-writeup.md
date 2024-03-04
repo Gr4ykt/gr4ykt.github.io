@@ -1,24 +1,23 @@
 ---
 title: "Devvortex - HTB Writeup"
 layout: single
-
 excerpt: "Esta es la descripcion de la maquina"
 show_date: true
 classes: wide
-
-header:
-  teaser: "/assets/images/Devvortex-HackTheBox/Devvortex-header.png"
-  teaser_home_page: true
-  icon: "/assets/images/Devvortex-HackTheBox/Devvortex-htb-logo.png"
 
 toc: true
 toc_label: "Contenido"
 toc_icon: "cube"
 toc_sticky: false
 
+header:
+  teaser: "https://github.com/Gr4ykt/gr4ykt.github.io/assets/images/Devvortex-HackTheBox/Devvortex-header.png"
+  teaser_home_page: true
+  icon: "https://github.com/Gr4ykt/gr4ykt.github.io/assets/images/Devvortex-HackTheBox/Devvortex-htb-logo.png"
+
 categories:
-  - Hack The Box
   - Writeup
+  - Hack The Box
 tags:
   - DNS-Resolution
   - Fuzzing
