@@ -13,7 +13,6 @@ toc_sticky: false
 
 header:
   teaser: https://github.com/Gr4ykt/gr4ykt.github.io/assets/78503985/7c819b40-3049-4149-b940-991e3e883441
-
   teaser_home_page: true
   icon: https://github.com/Gr4ykt/gr4ykt.github.io/assets/78503985/2e9afb33-966a-4848-af53-9473877d2350
 

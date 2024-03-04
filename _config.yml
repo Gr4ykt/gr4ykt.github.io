@@ -20,7 +20,7 @@ title                    : "graykt@Internet:~$ ./Gr4y_kt"
 title_separator          : "-"
 subtitle                 : # site tagline that appears below site title in masthead
 name                     : "Gr4ykt"
-description              : "https://gr4ykt.github.io/"
+description              : "https://gr4ykt.github.io"
 url                      : # the base hostname & protocol for your site e.g. "https://mmistakes.github.io"
 baseurl                  : # the subpath of your site, e.g. "/blog"
 repository               : "Gr4ykt/gr4ykt.github.io"
