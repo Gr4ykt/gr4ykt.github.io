@@ -7,21 +7,30 @@ show_date: true
 classes: wide
 
 header:
-  teaser: ""
+  teaser: "/assets/images/Devvortex-HackTheBox/Devvortex-header.png"
   teaser_home_page: true
-  icon: ""
+  icon: "/assets/images/Devvortex-HackTheBox/Devvortex-htb-logo.png"
 
 toc: true
 toc_label: "Contenido"
 toc_icon: "cube"
 toc_sticky: false
 
-header:
-  teaser:  
-  teaser_home_page: true
-
 categories:
   - Hack The Box
   - Writeup
+tags:
+  - DNS-Resolution
+  - Fuzzing
+  - Joomla
+  - CVE
+  - Linux
+  - Enumeration
+  - SQL
+  - Crypto
+  - GTFobins
 ---
+
+![Devvortex](/assets/images/Devvortex-HackTheBox/Devvortex-header.png)
+
 # Reconocimiento
