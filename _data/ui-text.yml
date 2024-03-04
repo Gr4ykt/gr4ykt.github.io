@@ -91,7 +91,7 @@ es: &DEFAULT_ES
   powered_by                 : "Funciona con"
   website_label              : "Sitio web"
   email_label                : "Correo electrónico"
-  recent_posts               : "Entradas recientes"
+  recent_posts               : "Posteos recientes"
   undefined_wpm              : "El parámetro words_per_minute (palabras por minuto) no está definido en _config.yml"
   comment_form_info          : "Tu dirección de correo electrónico no se publicará. Los campos obligatorios están marcados"
   comment_form_comment_label : "Comentario"
