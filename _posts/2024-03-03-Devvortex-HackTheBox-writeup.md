@@ -14,7 +14,7 @@ toc_sticky: false
 header:
   teaser: "/assets/images/Devvortex-HackTheBox/Devvortex-header.png"
   teaser_home_page: true
-  icon: "assets/images/Devvortex-HackTheBox/Devvortex-htb-logo.png"
+  icon: "/assets/images/Devvortex-HackTheBox/Devvortex-htb-logo.png"
 
 categories:
   - Writeup
