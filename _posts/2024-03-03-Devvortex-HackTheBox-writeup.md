@@ -10,10 +10,11 @@ toc_label: "Contenido"
 toc_icon: "cube"
 toc_sticky: false
 
+
 header:
-  teaser: "https://github.com/Gr4ykt/gr4ykt.github.io/assets/images/Devvortex-HackTheBox/Devvortex-header.png"
+  teaser: "/assets/images/Devvortex-HackTheBox/Devvortex-header.png"
   teaser_home_page: true
-  icon: "https://github.com/Gr4ykt/gr4ykt.github.io/assets/images/Devvortex-HackTheBox/Devvortex-htb-logo.png"
+  icon: "assets/images/Devvortex-HackTheBox/Devvortex-htb-logo.png"
 
 categories:
   - Writeup
