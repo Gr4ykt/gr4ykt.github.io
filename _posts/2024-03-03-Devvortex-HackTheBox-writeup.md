@@ -163,7 +163,7 @@ Bien, ¿recuerdas aquellas credenciales que tenemos del usuario `lewis` que obtu
 
 ![Pasted image 20240119211958](https://github.com/Gr4ykt/gr4ykt.github.io/assets/78503985/c506b495-f39f-4fb7-84c6-6c8e8ab4fdb2)
 
-Dentro de esta consola de `MySQL` los comandos siguientes comandos:
+Dentro de esta consola de `MySQL` utilice siguientes comandos:
 
 ```sql
 USE joomla;
@@ -171,7 +171,7 @@ SHOW TABLES;
 select * from sd4fg_users;
 ```
 
-Pues, enumerando de manera rápida, vi la base de datos `Joomla` en esta había una tabla llamada `sd4fg_users` la cual contenía las credenciales del usuario `lewis`, el cual ya tenemos constancia, y uno más, `logan`. Este último, tiene una carpeta dentro del sistema (dentro del directorio `/home`), así que será nuestro objetivo, aunque hay un, pero antes de, tanto el usuario `lewis` como el usuario `logan` tienen las contraseñas hasheadas dentro de esta base de datos, tal parece un tipo de encriptado `blowfish`, muy común dentro de los sistemas operativos Linux. 
+Pues, enumerando de manera rápida, vi la base de datos `Joomla` en esta había una tabla llamada `sd4fg_users` la cual contenía las credenciales del usuario `lewis`, el cual ya tenemos constancia, y uno más, `logan`. Este último, tiene una carpeta dentro del sistema (dentro del directorio `/home`), así que será nuestro objetivo, aunque hay un pero antes de, tanto el usuario `lewis` como el usuario `logan` tienen las contraseñas hasheadas dentro de esta base de datos, tal parece un tipo de encriptado `blowfish`, muy común dentro de los sistemas operativos Linux. 
 
 ![Pasted image 20240119212341](https://github.com/Gr4ykt/gr4ykt.github.io/assets/78503985/be1b207a-92d8-4faf-b761-a3d4e7ca2e17)
 
