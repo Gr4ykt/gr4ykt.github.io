@@ -107,7 +107,7 @@ author:
   name             : "Gr4ykt"
   avatar           : "https://avatars.githubusercontent.com/u/78503985?v=4" # path of avatar image, e.g. "/assets/images/bio-photo.jpg"
   bio              : "Apasionado por la informática y la ciberseguridad, Programación web y scripts, también hacer writeups, Ctf player, Hack The Box y Tryhackme."
-  location         : "Chile"
+  location         : 
   email            :
   links:
     - label: "Email"
