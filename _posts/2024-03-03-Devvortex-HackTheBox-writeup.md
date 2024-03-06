@@ -163,7 +163,7 @@ Bien, ¿recuerdas aquellas credenciales que tenemos del usuario `lewis` que obtu
 
 ![Pasted image 20240119211958](https://github.com/Gr4ykt/gr4ykt.github.io/assets/78503985/c506b495-f39f-4fb7-84c6-6c8e8ab4fdb2)
 
-Dentro de esta consola de `MySQL` utilice siguientes comandos:
+Dentro de esta consola de `MySQL` utilice los siguientes comandos:
 
 ```sql
 USE joomla;
