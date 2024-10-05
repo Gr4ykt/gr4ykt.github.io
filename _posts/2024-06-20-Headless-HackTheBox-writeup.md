@@ -258,6 +258,3 @@ Y de esta manera estará completada la máquina.
 
 ![Pasted image 20240616230604](https://github.com/user-attachments/assets/9bb87783-88d5-4ce0-8826-1e9eae98c67c)
 ![Pasted image 20240616231317](https://github.com/user-attachments/assets/9ace5e19-f6fc-45ad-b9b8-20018b8fcabe)
-
-
-[Flag 
