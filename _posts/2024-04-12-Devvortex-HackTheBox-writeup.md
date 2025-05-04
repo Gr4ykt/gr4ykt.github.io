@@ -30,11 +30,12 @@ tags:
   - Crypto
   - GTFobins
 ---
-
 ![Devvortex-header](https://github.com/Gr4ykt/gr4ykt.github.io/assets/78503985/3dbacac4-f786-460b-b68e-4731fda121b7)
 
 # Reconocimiento
+
 ## Sistema operativo de la máquina
+
 Lo primero sería entender bien con qué tipo de máquina estamos tratando recordar que según el TTL, el tiempo en el cual se almacenan los datos cache en servidor o máquina, en este caso dará un *ttl de 63*, debido a que es una máquina Linux, pero esta posee un intermediario y por ello se ve reducido el tiempo de respuesta.
 
 | Sistema operativo | TTL |
@@ -49,36 +50,47 @@ ping -c 1 10.10.11.242
 ![Pasted image 20240119135859](https://github.com/Gr4ykt/gr4ykt.github.io/assets/78503985/6cb5e21b-0520-47d6-b450-0878d361bf19)
 
 # Escaneo y enumeración
+
 ## Nmap
+
 ```bash
 sudo nmap -sS --min-rate 5000 -p- -Pn -n -vvv 10.10.11.242
 ```
 
->Parámetros utilizados: 
->* **-sS:** Syn Scan.
->* **--min-rate 5000:** Decimos que no emita paquetes mas grandes que 5000.
->* **-p-**: Escaneo enfocado en los 65535 puertos.
->* **-Pn:** Evitar realizar rastreo de la version del sistema operativo remoto.
->* **-n:** Evitar la resolución DNS, simplemente para que el escaneo vaya un poco mas rápido, ya que la maquina si lo aplica.
->* **-vvv:** Triple *verbose* para tener mayor información al momento mientras se realiza el escaneo.
+> Parámetros utilizados:
+>
+> * **-sS:** Syn Scan.
+> * **--min-rate 5000:** Decimos que no emita paquetes mas grandes que 5000.
+> * **-p-**: Escaneo enfocado en los 65535 puertos.
+> * **-Pn:** Evitar realizar rastreo de la version del sistema operativo remoto.
+> * **-n:** Evitar la resolución DNS, simplemente para que el escaneo vaya un poco mas rápido, ya que la maquina si lo aplica.
+> * **-vvv:** Triple *verbose* para tener mayor información al momento mientras se realiza el escaneo.
 
 ![Pasted image 20240119140729](https://github.com/Gr4ykt/gr4ykt.github.io/assets/78503985/09bbf194-3ffd-4f13-89f4-76c68e7e7ae8)
 
 ## Resolución DNS
+
 El servidor realiza *Resolución DNS*. Al realizar resolución dns significa que al tratar de ir a la `10.10.11.242` a través del navegador, este nos manda a esta dirección `http://devvortex.htb/` por tanto, se debe de agregar al `/etc/hosts`.
 
 ```bash
 sudo nano /etc/hosts
 	10.10.11.242     devvortex.htb
 ```
+
 ## Escaneando la web
+
 ### Fuzzing - Directorios
+
 Realizando el fuzzing a los directorios, no llegue a mucho, pero igualmente dejo el escaneo que utilice para este caso.
+
 ```bash
 wfuzz -c --hc=404 -z file,/usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt http://devvortex.htb/FUZZ
 ```
+
 ### Fuzzing - Subdominios
+
 En este punto del escaneo, había algo bastante interesante, un subdominio llamado 'dev'.
+
 ```bash
 wfuzz -c --hc=404,302 -t 20 -w /usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-5000.txt -u http://devvortex.htb/ -H "Host: FUZZ.devvortex.htb"
 ```
@@ -86,17 +98,22 @@ wfuzz -c --hc=404,302 -t 20 -w /usr/share/wordlists/seclists/Discovery/DNS/subdo
 ![Pasted image 20240119143352](https://github.com/Gr4ykt/gr4ykt.github.io/assets/78503985/7152aac8-98d6-492e-8d8b-7ec22c205f33)
 
 Recordar agregarlo al `/etc/hosts` el subdominio encontrado, esta es la pista que debemos de seguir.
+
 ```bash
 sudo nano /etc/hosts
 	10.10.11.242    devvortex.htb dev.devvortex.htb
 ```
+
 ## Siguiendo la pista
+
 Siguiendo esta pista llegue a una página web que nada entregaba, revise de casualidad si hay algún tipo de `robots.txt` expuesto, pues sí lo había, con una ruta `administrator` bastante interesante.
 
 ![Pasted image 20240119143829](https://github.com/Gr4ykt/gr4ykt.github.io/assets/78503985/d2dc78da-1c87-4cb4-b0f8-3ccf00bdfe86)
 
 # Explotación
+
 ## Enumeración a través del CVE-2023-23752
+
 Al entrar al panel `administrator` que obtuvimos al acceder al `robots.txt` vemos que hay un panel de inicio de sesión Joomla, pues bien, indagando un poco más, en busca de versiones u otras cosas, pude ver que hay una manera de obtener credenciales gracias a una vulnerabilidad presente, aquí puedes ir al [CVE](https://github.com/0xNahim/CVE-2023-23752) en cuestión para más detalles del error. Aclarar que trate de ingresar con algún tipo de SQLi basado en error, pero no funciono, ya saben, la típica `or 1=1--`.
 
 ![Pasted image 20240119143918](https://github.com/Gr4ykt/gr4ykt.github.io/assets/78503985/3594503c-7bfd-4941-aefd-d0283dba3d21)
@@ -156,9 +173,11 @@ export TERM=xterm
 ```
 
 # Escalando privilegios
+
 Hasta ahora, como `www-data` tenemos acceso, así que habrá que tratar de escalar privilegios, ya sea a `root` u otro usuario que pillemos en el sistema, por lo tanto, debemos de tratar de realizar enumeraciones.
 
 ## Escalación de privilegios - Logan
+
 Bien, ¿recuerdas aquellas credenciales que tenemos del usuario `lewis` que obtuvimos anteriormente? Bueno, estas credenciales, si recordamos bien decían `db`, por tanto, quiero suponer que alguna base de datos opera por detrás y podemos utilizar estas mismas credenciales de Joomla para poder acceder a la base de datos, y efectivamente, estas credenciales funcionan (`lewis:P4ntherg0t1n5r3c0n##`).
 
 ![Pasted image 20240119211958](https://github.com/Gr4ykt/gr4ykt.github.io/assets/78503985/c506b495-f39f-4fb7-84c6-6c8e8ab4fdb2)
@@ -171,7 +190,7 @@ SHOW TABLES;
 select * from sd4fg_users;
 ```
 
-Pues, enumerando de manera rápida, vi la base de datos `Joomla` en esta había una tabla llamada `sd4fg_users` la cual contenía las credenciales del usuario `lewis`, el cual ya tenemos constancia, y uno más, `logan`. Este último, tiene una carpeta dentro del sistema (dentro del directorio `/home`), así que será nuestro objetivo, aunque hay un pero antes de, tanto el usuario `lewis` como el usuario `logan` tienen las contraseñas hasheadas dentro de esta base de datos, tal parece un tipo de encriptado `blowfish`, muy común dentro de los sistemas operativos Linux. 
+Pues, enumerando de manera rápida, vi la base de datos `Joomla` en esta había una tabla llamada `sd4fg_users` la cual contenía las credenciales del usuario `lewis`, el cual ya tenemos constancia, y uno más, `logan`. Este último, tiene una carpeta dentro del sistema (dentro del directorio `/home`), así que será nuestro objetivo, aunque hay un pero antes de, tanto el usuario `lewis` como el usuario `logan` tienen las contraseñas hasheadas dentro de esta base de datos, tal parece un tipo de encriptado `blowfish`, muy común dentro de los sistemas operativos Linux.
 
 ![Pasted image 20240119212341](https://github.com/Gr4ykt/gr4ykt.github.io/assets/78503985/be1b207a-92d8-4faf-b761-a3d4e7ca2e17)
 
@@ -182,7 +201,6 @@ john --wordlist=/usr/share/wordlists/rockyou.txt hashLogan.txt
 ```
 
 ![Pasted image 20240119213130](https://github.com/Gr4ykt/gr4ykt.github.io/assets/78503985/828ef156-9b52-4987-b37c-84912767d05b)
-
 
 Como podemos ver, ya tenemos la credenciales del usuario `logan:tequieromucho`, vamos a probarlas en `SSH` que si bien recordamos del escaneo, uno de los puertos abiertos era el `22`.
 
@@ -195,6 +213,7 @@ ssh logan@10.10.11.242
 En este punto ya podemos visualizar la flag de `user`, por tanto, solo nos quedaría avanzar hacia el usuario `root`.
 
 ## Escalación de privilegios - Root
+
 Continuando con la escalación de privilegios al usuario `root`, pues buscando y enumerando el sistema no llegue a mucho, así que procedí a realizar un `sudo -l`, ya que tenemos credenciales del usuario `logan`, por tanto, podemos ver el resultado que nos entrega este comando.
 
 ![Pasted image 20240119213739](https://github.com/Gr4ykt/gr4ykt.github.io/assets/78503985/b22cd4e5-abb6-42ec-8787-9288cabdc713)
@@ -207,16 +226,16 @@ Pero indagando más en internet, llegue a que el famoso `apport-cli` es una mane
 
 ![Pasted image 20240119214736](https://github.com/Gr4ykt/gr4ykt.github.io/assets/78503985/1c1316a9-5e4f-40b3-bda4-6ad252e0f9db)
 
->**¿Que es el comando `less`?**
->* El comando `less` es un visor de texto que permite ver archivos de texto línea por línea, en forma paginada, algo similar a lo que realiza `vim`.
+> **¿Que es el comando `less`?**
+>
+> * El comando `less` es un visor de texto que permite ver archivos de texto línea por línea, en forma paginada, algo similar a lo que realiza `vim`.
 
 Bien, el script de reportes `apport-cli` requiere de algún programa gestionado por el gestor de paquetes, en este caso, el `dpkg`, podríamos ocupar el mismo comando `less` utilizado por el `apport-cli` para poder realizar este reporte.
 
 ![Pasted image 20240305220850](https://github.com/Gr4ykt/gr4ykt.github.io/assets/78503985/7b8e3292-fbf3-4b6a-90e0-2273665bde83)
 ![Pasted image 20240305222221](https://github.com/Gr4ykt/gr4ykt.github.io/assets/78503985/db4e7283-3fc1-41aa-937c-01bb18dbbbe4)
 
-
-Bueno, teniendo en cuenta la salida, y comprendiendo que existe el uso de la herramienta `less` podemos revisar en él [GTFobins](https://gtfobins.github.io/) si encontramos algo relacionado con esta herramienta de Linux, y sí que lo había. 
+Bueno, teniendo en cuenta la salida, y comprendiendo que existe el uso de la herramienta `less` podemos revisar en él [GTFobins](https://gtfobins.github.io/) si encontramos algo relacionado con esta herramienta de Linux, y sí que lo había.
 
 ![Pasted image 20240119221141](https://github.com/Gr4ykt/gr4ykt.github.io/assets/78503985/6247fbe9-128a-46d5-8276-4f8a4c4a6c64)
 
@@ -226,7 +245,7 @@ Suponiendo lo que vemos en la imagen, podríamos usar el ejemplo `a`donde utiliz
 sudo /usr/bin/apport-cli less
 ```
 
-Seguimos los pasos para visualizar el reporte dando a la opción `V` y luego de ello escribimos `!/bin/sh`. 
+Seguimos los pasos para visualizar el reporte dando a la opción `V` y luego de ello escribimos `!/bin/sh`.
 
 ![Pasted image 20240305222307](https://github.com/Gr4ykt/gr4ykt.github.io/assets/78503985/046d4499-60c9-40a9-ada9-07f2941b2c46)
 ![Pasted image 20240305222344](https://github.com/Gr4ykt/gr4ykt.github.io/assets/78503985/e4bdd335-a5e9-45d4-9a52-da52dbc741f2)
