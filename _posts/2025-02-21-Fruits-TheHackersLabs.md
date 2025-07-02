@@ -106,3 +106,38 @@ nikto -url http://192.168.1.34/fruits.php
 
 [IMAGEN 5]
 
+Lo que podemos concluir de este resultado con la herramienta `nikto` es que estamos frente a un caso de **Local File inclusion** o *LFI*. Esta vulnerabilidad consiste en que el atacante puede acceder a archivos locales del servidor mediante la manipulación de parámetros de la URL, en este caso, específicamente `?file`, que es el parámetro que busca los datos de las frutas dentro de la página web. Pues bien, este será nuestro vector de ataque, en este caso, haré el intento con la herramienta `curl` para poder enviar la petición y ver los resultados de mejor manera.
+
+```bash
+curl -X GET "http://192.168.1.34/fruits.php?file=/etc/passwd"
+```
+
+[IMAGEN 6]
+[IMAGEN 7]
+
+## Fuerza bruta
+Pues bien, tenemos al usuario `bananaman`, con este usuario trataremos de realizar un ataque de fuerza bruta, pues si bien recuerdas, tenemos el puerto `22` abierto, el cual tiene el servicio `ssh` expuesto, la idea en este caso sería con la herramienta `hydra` tratar de hacer un ataque de fuerza bruta con uno de los mejores diccionarios para este caso que es el **rockyou.txt**, este diccionario es excepcional cuando se trata de contraseñas, por lo menos en lo que respecta en CTFs. Bueno, pues esto lo ejecute de la siguiente manera y me dio resultados muy positivos.
+
+```bash
+hydra -l bananaman -P /usr/share/wordlists/rockyou.txt ssh://192.168.1.34 -t 20
+```
+
+[IMAGEN 8]
+
+Este resultado es bastante positivo, ya que tenemos tanto el usuario como contraseña del usuario `bananaman:celtic` y esto nos da una ventaja en poder conectarnos vía ssh y pasar a la siguiente parte del ataque, con esto, ya habremos obtenido la bandera user
+
+[FLAG USUARIO]
+
+# Escalando privilegios
+En este caso, al tener la contraseña del usuario ingresado (el cual es `bananaman`) pues el intento de enumerar el sistema operativo es poco, sabemos que se trata de una máquina `Linux` debido al reconocimiento inicial basado en el `TTL` del servidor. Pues bien, con el comando `sudo -l` y colocamos la contraseña del usuario nos entregará información relacionada a que podemos ejecutar con permisos del usuario `root`.
+
+[IMAGEN 9]
+
+Pues vemos que podemos ejecutar el comando `find` como el usuario `root` con `sudo`, pues bien, en este siguiente proceso la cosa sería bastante sencilla, si ingresamos a la página de [GTFOBins](https://gtfobins.github.io/) y buscamos el comando `find` podremos ver la siguiente posible shell con sudo a través de este comando:
+
+[IMAGEN 10]
+
+Si logramos ejecutar este comando correctamente, como se puede ver, obtendremos una shell y si ejecutamos el comando `whoami` podemos ver que tenemos el acceso como el usuario root, por tanto, la máquina estará completada, tenemos acceso al sistema completo, solo debemos de sacar la flag igualmente del usuario root.
+
+[IMAGEN 11]
+[FLAG ROOT]
