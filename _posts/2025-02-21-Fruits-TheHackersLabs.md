@@ -1,7 +1,7 @@
 ---
 title: "Fruits - THL Writeup"
 layout: single
-excerpt: "Fruits es una máquina de TheHackerLabs. Para el acceso inicial aprovecharemos un LFI expuesto, lo cual nos permitirá obtener nombres de usuarios a través de enumeración de archivos primordiales como los son /etc/passwd, para posteriormente a través de fuerza bruta con ssh obtener la contraseña de un usuario. Una vez tengamos acceso a la máquina, con enumeración básica de sistemas Linux conseguiremos ver que el usuario tiene permisos de sudo con el comando find, lo cual, con ayuda del sitio GTFobins obtendremos acceso a root."
+excerpt: "Fruits es una máquina de TheHackerLabs. Para el acceso inicial aprovecharemos un LFI expuesto, lo cual nos permitirá obtener nombres de usuarios a través de enumeración de archivos primordiales como los son /etc/passwd, para posteriormente a través de fuerza bruta con hydra obtener la contraseña de un usuario al cual nos conectaremos por SSH. Una vez tengamos acceso a la máquina, con enumeración básica de sistemas Linux conseguiremos ver que el usuario tiene permisos de sudo con el comando find, lo cual, con ayuda del sitio GTFobins obtendremos acceso a root."
 show_date: true
 classes: wide
 
@@ -61,4 +61,48 @@ nmap -sS --min-rate 5000 -p- -Pn -vvv 192.168.1.34
 
 [IMAGEN 2]
 
+Pues podemos concluir la abertura de dos puertos con el análisis previamente realizado, el puerto `22, 80` están expuestos, posiblemente, se traten de servicio `SSH` y `HTTP`, ya que son los predeterminados para estos servicios. Un posible vector de descubrimiento de vulnerabilidades puede ser con la misma herramienta `nmap` utilizando los parámetros `-sCV` podemos explorar las versiones de estos servicios y hacernos ideas de por donde más explorar.
+
+```bash
+nmap -sCV -p22,80 192.168.1.34
+```
+
+>Parámetros utilizados:
+>* **-sCV:** Este comando es la combinación de dos, pese a ir a algo similar, ya que ambos hacen referencia a escanear las versiones y servicios que corren en el puerto, -sC es un comando enfocado en lanzar una serie de scripts de nmap a través de los propios scripts de la herramienta (NSE), su objetivo es la búsqueda de versiones, identificar vulnerabilidades, entre otras pruebas útiles. Mientras que -sV realiza una detección de servicios y versiones exactas en el puerto especificado.
+>* **-p22,80:** Señalamos los puertos a los que realizar el escaneo, en este caso solo son los dos puertos abiertos, en caso de no hacerlo con este parámetro, nmap realizara el escaneo en su top predeterminado de puertos, ya que nmap por detrás, si no se le señalan los puertos específicos, no realiza el escaneo en los 65535 puertos existentes, para ello se utiliza el parámetro `-p-`.
+
+[IMAGEN 3]
+
+Vale, las versiones de estos servicios no son vulnerables, tendremos que ingeniárnosla con otras cosas dentro de estos mismos vectores, al ser una máquina fácil, lo ideal es no buscar vulnerabilidades complejas, ya que suele ser más fácil y externo de lo que se ve.
+
+## Escaneando la Web
+En continuación a los escaneos, lo ideal sería tratar de abordarlo vía **HTTP**, puesto que es el vector más posible al tener una versión de SSH no vulnerable, así que no podremos probar mucho más de algún ataque relacionado con este servicio, en este caso, realizaré un ataque sencillo de **Fuzzing**, al fin y al cabo, enfocaremos este tipo de ataque al descubrimiento de rutas con un diccionario de rutas, este tipo de ataque consiste en la exploración rápida y automatizada de rutas, para este caso, pero te invito a investigar más de este tipo de ataques, ya que hasta existen ciertos tipos relacionados con la fuerza bruta vía petición web, descubrimiento de subdominios, etc. En este caso en particular, lo que haremos es tratar de descubrir rutas posibles a acceder con la herramienta `wfuzz` de la siguiente manera:
+
+```bash
+wfuzz -c --hc=404 -t 200 -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt http://192.168.1.34/FUZZ.php
+```
+
+>Parámetros utilizados:
+>* **-c:** Formato coloreado para los resultados del fuzzeo.
+>* **--hc=404:** Esconde el código de estado *404*, ya que de no hacerlo, la pantalla se llenara de rutas con este estado, cosa que es irrelevante si lo que buscamos, son las posibles rutas.
+>* **-t 200:** Emplea *200 hilos*, esto con el objetivo de que el escaneo vaya un poco más rápido, en caso de tener tu sistema operativo funcionando con una buena GPU y CPU, puedes tener la posibilidad de emplear muchos más hilos y que el escaneo vaya mucho más rápido.
+>* **-w [Ruta diccionario]:** Esta ruta es de un diccionario de fuzzing que viene con la herramienta [dirbuster](https://www.kali.org/tools/dirbuster/) y con su parámetro le damos a entender a la herramienta `wfuzz` que es el diccionario a emplear para las iteraciones en busca de rutas.
+>* **URL/FUZZ.extensión:** Señalamos la dirección web finalmente y también donde emplear el fuzzing, con la palabra clave `FUZZ` nosotros le decimos a `wfuzz` que es donde debe aplicar las palabras clave dentro del diccionario, y en conjunto, he aplicado el ataque con la extensión `.php` porque son los archivos que me interesan en este ataque (ya veras el porque).
+
+[IMAGEN 4]
+
+Lo que pudimos rescatar del fuzzeo es muy relevante, debido a que nos puede llevar a temas bastantes útiles dentro de todo, podemos ver que nos ha detectado la ruta `fruits.php`, la cual nos ha entregado un código de esta `200 OK` señalando que podemos acceder a esta ruta.
+# Explotación
+## Local File Inclusion
+> Una cosa que se me olvido mencionar es que puedes perfectamente realizar este ataque a través del navegador web como Firefox, pero yo preferí realizarlo de esta manera a través de la terminal con `curl`, ya que me acomodaba más ver la información resultado del ataque, de igual manera, te invito que busques de otras maneras que se acomoden a tu manera de hackear.
+
+Pues bien, teniendo en cuenta la ruta que tenemos `fruits.php` podemos tratar de enumerar de dos maneras, una y la más útil de todas es una manera más manual, utilizando técnicas y probando distintos componentes del sitio web en cuestión y utilizar herramientas como [BurpSuite](https://portswigger.net/burp) para analizar las peticiones enviadas al servidor y sus respuestas. O la segunda manera y la que utilizaré en este caso, utilizar herramientas automatizadas para agilizar el proceso de análisis de vulnerabilidades y posibles vectores de ataques, si quieres ver algún caso de ataque web manual, te invito a que veas mi writeup de la máquina retirada de Hack The Box [Headless](https://gr4ykt.github.io/writeup/hack%20the%20box/Headless-HackTheBox-writeup/). Pues bien, volviendo al tema, la herramienta que emplee en este caso fue `nikto`, una muy buena herramienta para análisis rápidos de sitios web o rutas en específico.
+
+> Recomiendo encarecidamente que si estás comenzando a aprender hacking ético, busca comprender los conceptos y el trabajo manual antes de hacer uso de herramientas automatizadas, es importante aprender de todo un poco en este rubro.
+
+```bash
+nikto -url http://192.168.1.34/fruits.php
+```
+
+[IMAGEN 5]
 

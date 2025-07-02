@@ -138,6 +138,10 @@ author:
       icon: "fas fa-regular fa-cube"
       url: "https://app.hackthebox.com/profile/351582"
 
+    - label: "LinkedIn"
+      icon: "fab fa-fw fa-linkedin"
+      url: "https://www.linkedin.com/in/mriveragt4/"
+
 # Site Footer
 footer:
   links:
