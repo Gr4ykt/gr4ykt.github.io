@@ -1,4 +1,4 @@
-![Pasted image 20241205180242](https://github.com/user-attachments/assets/3defc240-3ad4-419f-b7fb-e398c8845be6)---
+---
 title: "Fruits - THL Writeup"
 layout: single
 excerpt: "Fruits es una máquina de TheHackerLabs. Para el acceso inicial aprovecharemos un LFI expuesto, lo cual nos permitirá obtener nombres de usuarios a través de enumeración de archivos primordiales como los son /etc/passwd, para posteriormente a través de fuerza bruta con hydra obtener la contraseña de un usuario al cual nos conectaremos por SSH. Una vez tengamos acceso a la máquina, con enumeración básica de sistemas Linux conseguiremos ver que el usuario tiene permisos de sudo con el comando find, lo cual, con ayuda del sitio GTFobins obtendremos acceso a root."
