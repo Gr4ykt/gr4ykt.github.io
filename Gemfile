@@ -6,3 +6,5 @@ gem "kramdown-parser-gfm"
 gem "webrick", "~> 1.8"
 gem 'bigdecimal'
 gem 'base64'
+gem "jekyll-sitemap"
+gem "jekyll-seo-tag"

@@ -12,7 +12,7 @@ toc_sticky: false
 
 
 header:
-  teaser: https://raw.githubusercontent.com/Gr4ykt/gr4ykt.github.io/master/assets/images/Headless-HackTheBox/Headless-htb-logo.png
+  teaser: /assets/images/HackTheBox/Headless-HackTheBox/Headless-htb-logo.png
   teaser_home_page: true
   icon: https://github.com/Gr4ykt/gr4ykt.github.io/assets/78503985/2e9afb33-966a-4848-af53-9473877d2350
 
@@ -54,7 +54,7 @@ nmap -sS --min-rate 5000 -p- -Pn -n -vvv 10.10.11.8 -oN 1
 ```
 
 >Parámetros utilizados: 
->* **-sS:** Syn Scan o Stealth Scan, No completa la conexión hacia la máquina, pero de igual modo emite un paquete que descubre si el puerto está abierto o no..
+>* **-sS:** Syn Scan o Stealth Scan, No completa la conexión hacia la máquina, pero de igual modo emite un paquete que descubre si el puerto está abierto o no.
 >* **--min-rate 5000:** Decimos que no emita paquetes mas grandes que 5000.
 >* **-p-**: Escaneo enfocado en los 65535 puertos.
 >* **-Pn:** Evitar realizar rastreo de la version del sistema operativo remoto.

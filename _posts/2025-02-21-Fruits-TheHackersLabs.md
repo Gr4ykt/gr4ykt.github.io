@@ -53,7 +53,7 @@ nmap -sS --min-rate 5000 -p- -Pn -vvv 192.168.1.34
 ```
 
 >Parámetros utilizados: 
->* **-sS:** Syn Scan o Stealth Scan, No completa la conexión hacia la máquina, pero de igual modo emite un paquete que descubre si el puerto está abierto o no..
+>* **-sS:** Syn Scan o Stealth Scan, No completa la conexión hacia la máquina, pero de igual modo emite un paquete que descubre si el puerto está abierto o no.
 >* **--min-rate 5000:** Decimos que no emita paquetes mas grandes que 5000.
 >* **-p-**: Escaneo enfocado en los 65535 puertos.
 >* **-Pn:** Evitar realizar rastreo de la version del sistema operativo remoto.

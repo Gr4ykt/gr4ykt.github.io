@@ -16,17 +16,17 @@ minimal_mistakes_skin    : "dark" # "air", "aqua", "contrast", "dark", "dirt", "
 
 # Site Settings
 locale                   : "es"
-title                    : "graykt@Internet:~$ ./Gr4y_kt"
+title                    : "Gr4ykt"
 title_separator          : "-"
-subtitle                 : # site tagline that appears below site title in masthead
+subtitle                 : "Hacking > /dev/root"
 name                     : "Gr4ykt"
-description              : "https://gr4ykt.github.io"
-url                      : # the base hostname & protocol for your site e.g. "https://mmistakes.github.io"
+description              : "Writeups de CTF, Pentesting y Ciberseguridad Red Team"
+url                      : "https://gr4ykt.github.io"
 baseurl                  : # the subpath of your site, e.g. "/blog"
 repository               : "Gr4ykt/gr4ykt.github.io"
-teaser                   : # path of fallback teaser image, e.g. "/assets/images/500x300.png"
-logo                     : # path of logo image to display in the masthead, e.g. "/assets/images/88x88.png"
-masthead_title           : # overrides the website title displayed in the masthead, use " " for no title
+teaser                   : "/assets/images/Principal/Icon.png" # path of fallback teaser image, e.g. "/assets/images/500x300.png"
+logo                     : "/assets/images/Principal/Icon.png"
+masthead_title           : "graykt@Internet:~$ ./Gr4y_kt"
 # breadcrumbs            : false # true, false (default)
 words_per_minute         : 200
 comments:
@@ -73,7 +73,7 @@ google:
   search_engine_id       : # YOUR_SEARCH_ENGINE_ID
   instant_search         : # false (default), true
 # SEO Related
-google_site_verification :
+google_site_verification : google-site-verification=oj1OYUA4L7lJgGCGo0MUjptNI1osD85gQeSIbgCLBv0
 bing_site_verification   :
 naver_site_verification  :
 yandex_site_verification :
@@ -245,6 +245,8 @@ plugins:
   - jekyll-gist
   - jekyll-feed
   - jekyll-include-cache
+  - jekyll-sitemap
+  - jekyll-seo-tag
 
 # mimic GitHub Pages with --safe
 whitelist:
